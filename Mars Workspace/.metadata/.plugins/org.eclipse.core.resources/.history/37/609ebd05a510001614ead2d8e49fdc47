@@ -1,0 +1,103 @@
+package backend;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.Statement;
+import java.util.Arrays;
+
+import org.json.JSONArray;
+
+public class dataFetch {
+	
+	public static String fetch()
+	{
+		
+		Connection con = null;
+		Statement st = null;
+		int x;
+		int count=-1;
+		int id=0, temp;
+		float a, b;
+		float arr1[] = null;
+		float arr2[] = null;
+		float avg[]=null;
+		try
+		{
+			
+			Class.forName("com.mysql.jdbc.Driver");  
+			
+			System.out.println("Connecting to database...");
+			
+	    	 con=DriverManager.getConnection("jdbc:mysql://localhost:3306/weathero","root","");
+			
+	    	System.out.println("\n\n\t\tCONNECTION  CREATED\n\n\t\t");
+	    	
+	    	st = con.createStatement();
+	    	
+	    	
+	    	String sql = "SELECT id, a,b FROM historic";
+	    	
+	    	ResultSet rs = st.executeQuery(sql);
+	    	System.out.println("Executing query...");
+	    	rs.last();
+	    	int size = rs.getRow();
+	    	rs.beforeFirst();
+	    	System.out.println(" \n\n\n\n\t\tRs = "+size);
+	    	arr1 = new float[size];
+	    	arr2 = new float[size];
+	    	avg = new float[size];
+	    	  while(rs.next()){
+	    		  	
+	    		  	count++;
+	    	         //Retrieve by column name
+	    	          id  = rs.getInt("id");
+	    	         //temp = rs.getInt("temperature");
+	    	          a = rs.getFloat("a");
+	    	          b = rs.getFloat("b");
+	    	        // String date = rs.getString("date");
+	    	        if(a > 0.00)
+	    	         arr1[count]=a;
+	    	        if(b > 0.00)
+	    	         arr2[count]=b;
+	    	         //Display values
+	    	       //  System.out.print("ID: " + id);
+	    	       //  System.out.print(", Temperature: " + temp);
+	    	       //  System.out.print(", Humidity: " + humidity);
+	    	       //  System.out.println("\n\nArray [ " + id+"] : "+arr[id]+"\n\n\t\t");
+	    	  }
+	     
+	    	 // ArrayList arrayList = new ArrayList(Arrays.asList(arr));
+	    	  //JSONArray json = (new JSONArray(Arrays.asList(arr)));
+				//System.out.println(json+"\n\n\n\n");        	  
+				System.out.println( "a = " +Arrays.toString(arr1)+"\n\n\n\n");
+				System.out.println( "b = " +Arrays.toString(arr2)+"\n\n\n\n");
+						
+				for(int i=0; i<=count; i++)
+				{
+					avg[i] = arr1[i]+arr2[i];
+				}
+				
+		}
+		catch(Exception e)
+		{
+			System.out.println("\n\n\t\tERROR IN CREATING CONNECTION \n\n\t\t");
+			System.out.println(e);
+		}
+		finally
+		{
+			try
+			{
+				if(con != null)
+				con.close();
+			}
+			catch(Exception e)
+			{
+				System.out.println("\n\n\t\tERROR IN CLOSING CONNECTION \n\n\t\t");
+			}
+		}
+		return Arrays.toString(avg);
+		
+		
+	}
+}

@@ -1,0 +1,122 @@
+package ardno;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.sql.*;
+import java.util.Timer;
+import java.util.TimerTask;
+
+ 
+ 
+public class SimpleRead {
+ 
+   /**
+    * @param args
+    */
+	
+	public static Connection con = null;
+	public static PreparedStatement pst = null;
+	public static ResultSet rs = null;
+	
+	public static String falsevalue;
+	
+	
+    public static void main(String[] args) {
+    	
+    	
+    	
+    File file = new File("/home/showmik/out.txt");
+       try {
+           RandomAccessFile r = new RandomAccessFile(file, "r");
+           //First time read
+           String str = null;
+           falsevalue=r.readLine();
+        	   
+           
+           while((str = r.readLine()) != null) {
+        	   if(!str.equals("") )  {
+        		   
+        		   sendDataToDatabase(str);
+        		   
+        		   
+                   System.out.println(str);
+        	   }    
+           }
+           r.seek(r.getFilePointer());
+           startTimer(r);
+       } catch (FileNotFoundException e) {
+           e.printStackTrace();
+       } catch (IOException e) {
+           e.printStackTrace();
+       }
+    }
+  
+    private static void sendDataToDatabase(String str) {
+		
+    	String sql = "";
+    	int result=0;
+    	con = Dbutil.getConnection();
+    	
+    	String arr[] = new String[2];
+    	arr = str.split(",");
+    	
+    	System.out.println("\t Fetched Array Values :: "+arr[0]+"  ::  "+Float.parseFloat(arr[1]) );
+    	
+    	
+    	sql="insert into historic(a,b) values(?,?)";
+    	
+//    	if (arr[0] == "a")
+//    		sql="insert into historic(a) values(?)";
+//    	if (arr[0] == "b")
+//    		sql="insert into historic(b) values(?)";
+    	
+    	
+    	
+    	pst = Dbutil.getPreparedStatement(sql);
+    	
+    	
+    	try {
+    			
+            	
+    		pst.setFloat(1, Float.parseFloat(arr[1]));
+    		pst.setFloat(2, ));
+    		result = pst.executeUpdate();
+    		
+    		if(result!=0){
+    			
+    			System.out.println("successfully inserted!");
+    		}
+    		
+    	}catch(SQLException e) {
+    		
+    		e.printStackTrace();
+    	} finally {
+    		
+    		Dbutil.releaseResources();
+    	}
+		
+	}
+
+	private static void startTimer(final RandomAccessFile r) {
+     Timer timer = new Timer();
+     timer.scheduleAtFixedRate(new TimerTask() {
+     @Override
+     public void run() {
+     String str = null;
+     try {
+          while((str = r.readLine()) != null) {
+        	if(!str.equals(null))  {
+            
+        		sendDataToDatabase(str);
+        		System.out.println(str);
+        	}
+          }
+          r.seek(r.getFilePointer());
+     } catch (IOException e) {
+         e.printStackTrace();
+     }
+      }
+ }, 0, 1000);
+    }
+}
